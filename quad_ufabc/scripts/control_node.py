@@ -329,10 +329,8 @@ def controller_node():
             #T, q_pdes = controller.pos_control_quat(pos_est, pos_ref, vel_real, vel_ref, accel_ref)#Pedro: tem trocar esse cara
             #T, phi_des, theta_des = controller.pos_control_PD(pos_real, pos_ref, vel_real, vel_ref, accel_ref, psi)
             T, phi_des, theta_des = controller.pos_control_PD2(pos_real, pos_ref, vel_real, vel_ref, accel_ref, psi)
-            ang_ref = np.array([[phi_des, theta_des, psi_des]], dtype=object).T
+            ang_ref = np.asarray([phi_des, theta_des, psi_des], dtype=object).reshape(3,1)
             rospy.loginfo('Alo')
-            print(phi_des)
-            print(theta_des)
 
             #Compute the desired quaternion
             #q_des = QuatProd(q_pdes, qz) # Pedro alterou
@@ -348,34 +346,33 @@ def controller_node():
             #Attitude Control based in quaternion parametrization
             #tau, error = controller.att_control_quat(q_est, q_des, omega_gyro) #Pedro: Tem que trocar esse cara
             # --------------------------------------- Meus controladores ------------------------------------- #
-            #tau_x, tau_y, tau_z = controller.att_control_PD(ang_real, omega, ang_ref)
+            tau_x, tau_y, tau_z = controller.att_control_PD(ang_real, omega, ang_ref)
             #tau_x, tau_y, tau_z = controller.att_control_PD2(ang_real, omega, ang_ref)
-            tau_x, tau_y, tau_z = controller.att_control_LQR(ang_real, omega, ang_ref) #Pedro: Meu controlador
-            tau = np.array([[tau_x, tau_y, tau_z]]).T #Pedro meu controlador e do PID
+            #tau_x, tau_y, tau_z = controller.att_control_LQR(ang_real, omega, ang_ref) #Pedro: Meu controlador
+            tau = np.array([tau_x, tau_y, tau_z]).reshape(3,1) #Pedro meu controlador e do PID
             print(len(tau))
             print(tau)
-            print(tau[0,0])
 
             #Compute the rotors speeds from obtained inputs
-            w, _, _ = controller.f2w(T, [tau[0,0], tau[1,0], tau[2,0]])  
+            w, _, _ = controller.f2w(T, [tau[0], tau[1], tau[2]])  
 
             print(w)
             print(len(w))
-            print(w[0,0])
+            #print(w[0,0])
             
-            w_gambiarra = w[0]
-            print(w_gambiarra)
+            #w_gambiarra = w[0]
+            #print(w_gambiarra)
 
-            #w[0] = -w[0] #Original
-            #w[2] = -w[2] #Original
+            w[0] = -w[0] #Original
+            w[2] = -w[2] #Original
 
-            w_gambiarra[0] = -w_gambiarra[0] #Gambiarra
-            w_gambiarra[2] = -w_gambiarra[2] #Gambiarra
+            #w_gambiarra[0] = -w_gambiarra[0] #Gambiarra
+            #w_gambiarra[2] = -w_gambiarra[2] #Gambiarra
 
 
             #Send the command to quadrotor
-            #quad_ufabc.step(w/10) #Original
-            quad_ufabc.step(w_gambiarra/10) #Gambiarra
+            quad_ufabc.step(w/10) #Original
+            #quad_ufabc.step(w_gambiarra/10) #Gambiarra
 
 
             ##################   Append lists  ####################################################
