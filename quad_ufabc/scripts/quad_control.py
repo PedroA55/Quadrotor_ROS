@@ -94,7 +94,7 @@ class Controller:
         #x = np.array([[self.KT, self.KT, self.KT, self.KT],
         #              [-self.L*self.KT, 0, self.L*self.KT, 0],
         #              [0, -self.L*self.KT, 0, self.L*self.KT],
-        #              [-self.KD, self.KD, -self.KD, self.KD]])
+        #             [-self.KD, self.KD, -self.KD, self.KD]])
         x = np.array([[self.KT, self.KT, self.KT, self.KT],
                       [0, self.L*self.KT, 0, -self.L*self.KT],
                       [-self.L*self.KT, 0, self.L*self.KT, 0],
@@ -106,9 +106,9 @@ class Controller:
                       
     
 
-        y = np.array([f, float(m[0]), float(m[1]), float(m[2])], dtype=object).T
+        y = np.array([f, float(m[0]), float(m[1]), float(m[2])], dtype=object).T # Empuxo e momentos
         
-        #u = np.linalg.solve(x, y)
+        #u = np.linalg.solve(x, y) # Me dá o quadrado das velocidades angulares dos rotores
         #uma alternativa (provavelmente não vai resolver)
         u = np.dot(x_t,y)
 
@@ -121,7 +121,7 @@ class Controller:
         w_3 = np.sqrt(np.abs(u[2]))*modules[2]
         w_4 = np.sqrt(np.abs(u[3]))*modules[3]
             
-        w = np.array([[w_1,w_2,w_3,w_4]]).T
+        w = np.array([w_1,w_2,w_3,w_4]).reshape(4,1)
 
         FM_new = np.dot(x, u)
         
@@ -137,16 +137,20 @@ class Controller:
         """
         Using linear optimal control to compute the momentuns using angles as input
         """
-
         angle_error = ang_des - ang_atual
+        #angle_error = np.subtract(ang_des, ang_atual)
+        angle_error.reshape(3,1)
         ang_vel_des = (ang_des - self.ang_ant_des)/0.01
         ang_vel_error = ang_vel_des - ang_vel_atual
+        ang_vel_error.reshape(3,1)
 
         Xe = np.concatenate((angle_error, ang_vel_error), axis=0) # vetor de estado
+        Xe.reshape(6,1)
 
         # Parâmetros:
         K = self.K        # Matriz de ganho para a entrada de controle u*(t)
         u = -np.dot(K,Xe)
+        print(len(u))
 
         #Optimal input
         tau_x = float(u[0])
@@ -163,9 +167,9 @@ class Controller:
     def pos_control_PD2(self, pos_atual, pos_des, vel_atual, vel_des, accel_des, psi):
 
         #PD gains Real States
-        Kp = np.array([[2, 0 ,0],
-                       [0, 2, 0],
-                       [0, 0, 8]])*8
+        Kp = np.array([[10, 0 ,0],
+                       [0, 10, 0],
+                       [0, 0, 10]])*1
         Kd = np.array([[-1, 0, 0],
                        [0, -1, 0],
                        [0, 0, -3]])*0
@@ -178,16 +182,17 @@ class Controller:
         t = vel_des/np.linalg.norm(vel_des)
         b = np.cross(t, n, axis=0)
 
-        #if np.isnan(b).any:
-        #    pos_error = dpos_error
-        #else:
-        #   pos_error = (dpos_error.T@n)@n + (dpos_error.T@b)@b
+        if np.isnan(b).any:
+            pos_error = dpos_error
+        else:
+           pos_error = (dpos_error.T@n)@n + (dpos_error.T@b)@b
 
 
         
         # alo = 1
         rddot_c = accel_des + Kd@vel_error + Kp@dpos_error 
         
+        print(rddot_c)
 
         T = self.M*(self.G + rddot_c[2]) #Pedro: parece estar correto
 
