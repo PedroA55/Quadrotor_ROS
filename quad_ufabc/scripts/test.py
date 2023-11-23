@@ -19,7 +19,7 @@ mydir = os.path.abspath(sys.path[0])
 
 #Results directory
 results = 'data/states.p'
-case = 'resultado_plot'
+case = 'Control_PD'
 
 ########################## PLOTTING ANALYSIS #############################################
 
@@ -34,14 +34,14 @@ if os.path.exists(mydir + '/' + results):
     #cam1_pos = states['measured position camera 1']
     #cam2_pos = states['measured position camera 2']
     #est_pos = states['estimated position']
-    real_att = states['real attitude']
+    real_att = states['real attitude euler']
     #cam1_att = states['measured attitude camera 1']
     #cam2_att = states['measured attitude camera 2']
-    des_att = states['desired attitude']
+    #des_att = states['desired attitude']
     #est_att = states['estimated attitude']
-    #est_bias_g = states['estimated gyro bias']
+    est_bias_g = states['estimated gyro bias']
     #trace_list = states['trace'] 
-    #accel_list = states['accel meas']
+    accel_list = states['accel meas']
     #P_list = states['P']
     #error_list = states['error state']
     vel_list = states['vel']
@@ -49,7 +49,7 @@ if os.path.exists(mydir + '/' + results):
 
     
 
-time = np.arange(0, 20, 0.01)
+time = np.arange(0, 20, 0.01) # Esse range não deveria ser uma variável global?
 
 #Plot position
 fig_pos, (x, y, z) = plt.subplots(3, 1, figsize=(14,8), sharex=True)
@@ -90,18 +90,39 @@ z.grid()
 
 
 ################################################################################################################
+#Plot attitude in euler diretamente
+fig_euler, (roll, pitch, yaw) = plt.subplots(3, 1, figsize=(14,8), sharex=True)
+
+roll.plot(time, real_att[0], 'r-.', label=r'$\phi_{real}(t)$')
+pitch.plot(time, real_att[1], 'r-.', label=r'$\theta_{real}(t)$')
+yaw.plot(time, real_att[2], 'r-.', label=r'$\psi_{real}(t)$')
+
+
+yaw.set_xlabel('Tempo(s)')
+
+roll.set_ylabel(r'$\phi (rad)$')
+pitch.set_ylabel(r'$\theta (rad)$')
+yaw.set_ylabel(r'$\psi (rad)$')
+
+roll.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+pitch.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+yaw.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+
+roll.grid()
+pitch.grid()
+yaw.grid()
 
 #Plot attitude in quaternion
-fig_quat, (q0, q1, q2, q3) = plt.subplots(4, 1, figsize=(14,8), sharex=True)
-q0.plot(time, real_att[0], 'r-.',  label=r'$q_{0,real}(t)$')
-q1.plot(time, real_att[1], 'r-.', label=r'$q_{1,real}(t)$')
-q2.plot(time, real_att[2], 'r-.', label=r'$q_{2,real}(t)$')
-q3.plot(time, real_att[3], 'r-.', label=r'$q_{3,real}(t)$')
+#fig_quat, (q0, q1, q2, q3) = plt.subplots(4, 1, figsize=(14,8), sharex=True)
+#q0.plot(time, real_att[0], 'r-.',  label=r'$q_{0,real}(t)$')
+#q1.plot(time, real_att[1], 'r-.', label=r'$q_{1,real}(t)$')
+#q2.plot(time, real_att[2], 'r-.', label=r'$q_{2,real}(t)$')
+#q3.plot(time, real_att[3], 'r-.', label=r'$q_{3,real}(t)$')
 
-q0.plot(time, des_att[0], 'g--', label=r'$q0_{des}(t)$')
-q1.plot(time, des_att[1], 'g--', label=r'$q1_{des}(t)$')
-q2.plot(time, des_att[2], 'g--', label=r'$q2_{des}(t)$')
-q3.plot(time, des_att[3], 'g--', label=r'$q3_{des}(t)$')
+#q0.plot(time, des_att[0], 'g--', label=r'$q0_{des}(t)$')
+#q1.plot(time, des_att[1], 'g--', label=r'$q1_{des}(t)$')
+#q2.plot(time, des_att[2], 'g--', label=r'$q2_{des}(t)$')
+#q3.plot(time, des_att[3], 'g--', label=r'$q3_{des}(t)$')
 
 #q0.plot(time, est_att[0], 'b', label=r'$q_{0,est}(t)$')
 #q1.plot(time, est_att[1], 'b', label=r'$q_{1,est}(t)$')
@@ -118,68 +139,68 @@ q3.plot(time, des_att[3], 'g--', label=r'$q3_{des}(t)$')
 # q2.plot(time, cam2_att[2], 'k--', label=r'$q2_{cam_2}(t)$', alpha=0.7)
 # q3.plot(time, cam2_att[3], 'k--', label=r'$q3_{cam_2}(t)$', alpha=0.7)
 
-q3.set_xlabel('Tempo(s)')
+#q3.set_xlabel('Tempo(s)')
 
-q0.set_ylabel(r'$q_0$')
-q1.set_ylabel(r'$q_1$')
-q2.set_ylabel(r'$q_2$')
-q3.set_ylabel(r'$q_3$')
+#q0.set_ylabel(r'$q_0$')
+#q1.set_ylabel(r'$q_1$')
+#q2.set_ylabel(r'$q_2$')
+#q3.set_ylabel(r'$q_3$')
 
-q0.set_ylim(0.8, 1)
-q1.set_ylim(-.04, .04)
-q2.set_ylim(-.05, .05)
-q3.set_ylim(-0.05, 0.4)
+#q0.set_ylim(0.8, 1)
+#q1.set_ylim(-.04, .04)
+#q2.set_ylim(-.05, .05)
+#q3.set_ylim(-0.05, 0.4)
 
-q0.legend(bbox_to_anchor=(1.04,1), loc="upper left")
-q1.legend(bbox_to_anchor=(1.04,1), loc="upper left")
-q2.legend(bbox_to_anchor=(1.04,1), loc="upper left")
-q3.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+#q0.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+#q1.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+#q2.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+#q3.legend(bbox_to_anchor=(1.04,1), loc="upper left")
 
-q0.grid()
-q1.grid()
-q2.grid()
-q3.grid()
+#q0.grid()
+#q1.grid()
+#q2.grid()
+#q3.grid()
 
 # # Plot attitude in Euler angles
-cam1_phi, cam2_phi, real_phi, des_phi, est_phi = [], [], [], [], []
-cam1_theta, cam2_theta, real_theta, des_theta, est_theta = [], [], [], [], []
-cam1_psi, cam2_psi, real_psi, des_psi, est_psi = [], [], [], [], []
+#cam1_phi, cam2_phi, real_phi, des_phi, est_phi = [], [], [], [], []
+#cam1_theta, cam2_theta, real_theta, des_theta, est_theta = [], [], [], [], []
+#cam1_psi, cam2_psi, real_psi, des_psi, est_psi = [], [], [], [], []
 
 
-quaternions_list = [real_att, des_att, est_att, cam1_att, cam2_att]
-phi_list = [real_phi, des_phi, est_phi, cam1_phi, cam2_phi]
-theta_list = [real_theta, des_theta, est_theta, cam1_theta, cam2_theta]
-psi_list = [real_psi, des_psi, est_psi, cam1_psi, cam2_psi]
+#quaternions_list = [real_att, des_att]
+#phi_list = [real_phi, des_phi]
+#theta_list = [real_theta, des_theta]
+#psi_list = [real_psi, des_psi]
 
-cont = 0
+#cont = 0
 
-for quat in quaternions_list:
+#for quat in quaternions_list:
 
-    for k in range(0, len(quat[0])):
+#    for k in range(0, len(quat[0])):
 
-        r = R.from_quat([quat[1][k], quat[2][k], quat[3][k], quat[0][k]])
-        euler_rad = r.as_euler('XYZ', degrees=False)
+#        r = R.from_quat([quat[1][k], quat[2][k], quat[3][k], quat[0][k]])
+#        euler_rad = r.as_euler('XYZ', degrees=False)
 
-        phi_list[cont].append(euler_rad[0])
-        theta_list[cont].append(euler_rad[1])
-        psi_list[cont].append(euler_rad[2])
+#        phi_list[cont].append(euler_rad[0])
+#        theta_list[cont].append(euler_rad[1])
+#        psi_list[cont].append(euler_rad[2])
 
-    cont += 1
+#    cont += 1
 
-fig_euler, (phi, theta, psi) = plt.subplots(3, 1, figsize=(14,8), sharex=True)
+#fig_euler, (phi, theta, psi) = plt.subplots(3, 1, figsize=(14,8), sharex=True)
 
-phi.plot(time, phi_list[0], 'r-.',  label=r'$\phi_{real}(t)$')
-theta.plot(time, theta_list[0], 'r-.', label=r'$\theta_{real}(t)$')
-psi.plot(time, psi_list[0], 'r-.', label=r'$\psi_{real}(t)$')
+#phi.plot(time, phi_list[0], 'r-.',  label=r'$\phi_{real}(t)$')
+#theta.plot(time, theta_list[0], 'r-.', label=r'$\theta_{real}(t)$')
+#psi.plot(time, psi_list[0], 'r-.', label=r'$\psi_{real}(t)$')
 
-phi.plot(time, phi_list[1], 'g--',  label=r'$\phi_{des}(t)$')
-theta.plot(time, theta_list[1], 'g--', label=r'$\theta_{des}(t)$')
-psi.plot(time, psi_list[1], 'g--', label=r'$\psi_{des}(t)$')
+#phi.plot(time, phi_list[1], 'g--',  label=r'$\phi_{des}(t)$')
+#theta.plot(time, theta_list[1], 'g--', label=r'$\theta_{des}(t)$')
+#psi.plot(time, psi_list[1], 'g--', label=r'$\psi_{des}(t)$')
 
 
-phi.plot(time, phi_list[2], 'b',  label=r'$\phi_{est}(t)$')
-theta.plot(time, theta_list[2], 'b', label=r'$\theta_{est}(t)$')
-psi.plot(time, psi_list[2], 'b', label=r'$\psi_{est}(t)$')
+#phi.plot(time, phi_list[2], 'b',  label=r'$\phi_{est}(t)$')
+#theta.plot(time, theta_list[2], 'b', label=r'$\theta_{est}(t)$')
+#psi.plot(time, psi_list[2], 'b', label=r'$\psi_{est}(t)$')
 
 
 # phi.plot(time, phi_list[3], 'y--', label=r'$\phi_{cam_1}(t)$', alpha=0.7)
@@ -190,23 +211,23 @@ psi.plot(time, psi_list[2], 'b', label=r'$\psi_{est}(t)$')
 # theta.plot(time, theta_list[4], 'k--', label=r'$\theta_{cam_2}(t)$', alpha=0.7)
 # psi.plot(time, psi_list[4], 'k--', label=r'$\psi_{cam_2}(t)$', alpha=0.7)
 
-psi.set_xlabel('Tempo(s)')
+#psi.set_xlabel('Tempo(s)')
 
-phi.set_ylabel(r'$\phi (rad)$')
-theta.set_ylabel(r'$\theta (rad)$')
-psi.set_ylabel(r'$\psi (rad)$')
+#phi.set_ylabel(r'$\phi (rad)$')
+#theta.set_ylabel(r'$\theta (rad)$')
+#psi.set_ylabel(r'$\psi (rad)$')
 
-phi.set_ylim(-0.1, 0.1)
-theta.set_ylim(-0.1, 0.1)
-psi.set_ylim(-0.1, 0.7)
+#phi.set_ylim(-0.1, 0.1)
+#theta.set_ylim(-0.1, 0.1)
+#psi.set_ylim(-0.1, 0.7)
 
-phi.legend(bbox_to_anchor=(1.04,1), loc="upper left")
-theta.legend(bbox_to_anchor=(1.04,1), loc="upper left")
-psi.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+#phi.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+#theta.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+#psi.legend(bbox_to_anchor=(1.04,1), loc="upper left")
 
-phi.grid()
-theta.grid()
-psi.grid()
+#phi.grid()
+#theta.grid()
+#psi.grid()
 
 
 #############################################################################################
@@ -234,10 +255,10 @@ bias_gyro.grid()
 #################################################################################################
 
 
-fig_pos.savefig('results/Plot_Result/position_test' + case + '.png', bbox_inches='tight')
-fig_quat.savefig('results/Plot_Result/quaternion_test' + case + '.png', bbox_inches='tight')
-fig_euler.savefig('results/Plot_Result/euler_test' + case + '.png', bbox_inches='tight')
-fig_bias.savefig('results/Plot_Result/bias_test' + case + '.png', bbox_inches='tight')
+fig_pos.savefig('results/Plot_Result/posicao' + case + '.png', bbox_inches='tight')
+#fig_quat.savefig('results/Plot_Result/quaternion_test2' + case + '.png', bbox_inches='tight')
+fig_euler.savefig('results/Plot_Result/euler' + case + '.png', bbox_inches='tight')
+fig_bias.savefig('results/Plot_Result/bias' + case + '.png', bbox_inches='tight')
 
 plt.show()
 
