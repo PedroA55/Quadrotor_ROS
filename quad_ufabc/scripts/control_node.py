@@ -262,28 +262,29 @@ def controller_node():
     
     #Declare some list for plotting
     x_list, x_real_list, y_list, y_real_list, z_list, z_real_list = [], [], [], [], [], []
-    x_est_list, y_est_list, z_est_list = [], [], []
-    x_cam_list, y_cam_list, z_cam_list = [], [], []
-    x_cam2_list, y_cam2_list, z_cam2_list = [], [], []
+    #x_est_list, y_est_list, z_est_list = [], [], []
+    #x_cam_list, y_cam_list, z_cam_list = [], [], []
+    #x_cam2_list, y_cam2_list, z_cam2_list = [], [], []
+    roll_real_list, pitch_real_list, yaw_real_list = [], [], []
 
     vx_list, vy_list, vz_list = [], [], []
     vx_real_list, vy_real_list, vz_real_list = [], [], []
 
-    q0_list, q1_list, q2_list, q3_list = [], [], [], []
-    q0_cam_list, q1_cam_list, q2_cam_list, q3_cam_list = [], [], [], []
-    q0_cam2_list, q1_cam2_list, q2_cam2_list, q3_cam2_list = [], [], [], []
-    q0_est_list, q1_est_list, q2_est_list, q3_est_list = [], [], [], []
-    q0_des_list, q1_des_list, q2_des_list, q3_des_list = [], [], [], []
+    #q0_list, q1_list, q2_list, q3_list = [], [], [], []
+    #q0_cam_list, q1_cam_list, q2_cam_list, q3_cam_list = [], [], [], []
+    #q0_cam2_list, q1_cam2_list, q2_cam2_list, q3_cam2_list = [], [], [], []
+    #q0_est_list, q1_est_list, q2_est_list, q3_est_list = [], [], [], []
+    #q0_des_list, q1_des_list, q2_des_list, q3_des_list = [], [], [], []
 
     ax_list, ay_list, az_list = [], [], []
     gx_list, gy_list, gz_list = [], [], []
 
     ag_x_list, ag_y_list, ag_z_list = [], [], []
     bg_x_list, bg_y_list, bg_z_list = [], [], []
-    P_list = []
-    error_list = []
+    #P_list = []
+    #error_list = []
 
-    trace_list = []
+    #trace_list = []
     
     k = 0
     #Flag to plot
@@ -314,7 +315,7 @@ def controller_node():
             pos_ref = np.array([[traj['x'][step], traj['y'][step], traj['z'][step]]]).T
             vel_ref = np.array([[traj['dx'][step], traj['dy'][step], traj['dz'][step]]]).T
             accel_ref = np.array([[traj['ddx'][step], traj['ddy'][step], traj['ddz'][step]]]).T
-            qz = traj['qz ref'][step]
+            qz = traj['qz ref'][step] # Só tenho a ref. de atitude apenas em quaternions. Verificar no trajectory se existe a informação em euler angles
 
             
             #Estimated states from Error State Kalman Filter
@@ -346,8 +347,8 @@ def controller_node():
             #Attitude Control based in quaternion parametrization
             #tau, error = controller.att_control_quat(q_est, q_des, omega_gyro) #Pedro: Tem que trocar esse cara
             # --------------------------------------- Meus controladores ------------------------------------- #
-            tau_x, tau_y, tau_z = controller.att_control_PD(ang_real, omega, ang_ref)
-            #tau_x, tau_y, tau_z = controller.att_control_PD2(ang_real, omega, ang_ref)
+            #tau_x, tau_y, tau_z = controller.att_control_PD(ang_real, omega, ang_ref)
+            tau_x, tau_y, tau_z = controller.att_control_PD2(ang_real, omega, ang_ref)
             #tau_x, tau_y, tau_z = controller.att_control_LQR(ang_real, omega, ang_ref) #Pedro: Meu controlador
             tau = np.array([tau_x, tau_y, tau_z]).reshape(3,1) #Pedro meu controlador e do PID
             print(len(tau))
@@ -358,23 +359,15 @@ def controller_node():
 
             print(w)
             print(len(w))
-            #print(w[0,0])
-            
-            #w_gambiarra = w[0]
-            #print(w_gambiarra)
-
+                    
+           
             w[0] = -w[0] #Original
             w[2] = -w[2] #Original
 
-            #w_gambiarra[0] = -w_gambiarra[0] #Gambiarra
-            #w_gambiarra[2] = -w_gambiarra[2] #Gambiarra
-
-
+            
             #Send the command to quadrotor
             quad_ufabc.step(w/10) #Original
-            #quad_ufabc.step(w_gambiarra/10) #Gambiarra
-
-
+            
             ##################   Append lists  ####################################################
 
             #Store real position in lists
@@ -387,11 +380,16 @@ def controller_node():
             vy_real_list.append(vel_real[1, 0])
             vz_real_list.append(vel_real[2, 0])
 
+            #Store real Euler angles in lists
+            roll_real_list.append(ang_real[0, 0])
+            pitch_real_list.append(ang_real[1, 0])
+            yaw_real_list.append(ang_real[2, 0])
+
             #Store real quaternion in lists
-            q0_list.append(q[0,0])
-            q1_list.append(q[1,0])
-            q2_list.append(q[2,0])
-            q3_list.append(q[3,0])
+            #q0_list.append(q[0,0])
+            #q1_list.append(q[1,0])
+            #q2_list.append(q[2,0])
+            #q3_list.append(q[3,0])
 
             #Store desired position in lists
             x_list.append(pos_ref[0,0])
@@ -405,31 +403,31 @@ def controller_node():
             #q3_des_list.append(q_des[3,0]) #Pedro alterou
 
             #Store estimated states from ErEKF
-            x_est_list.append(x_est)
-            y_est_list.append(y_est)
-            z_est_list.append(z_est)
+            #x_est_list.append(x_est)
+            #y_est_list.append(y_est)
+            #z_est_list.append(z_est)
 
             vx_list.append(vx)
             vy_list.append(vy)
             vz_list.append(vz)
 
-            q0_est_list.append(qw_est)
-            q1_est_list.append(qx_est)
-            q2_est_list.append(qy_est)
-            q3_est_list.append(qz_est)
+            #q0_est_list.append(qw_est)
+            #q1_est_list.append(qx_est)
+            #q2_est_list.append(qy_est)
+            #q3_est_list.append(qz_est)
 
             bg_x_list.append(bg_x)
             bg_y_list.append(bg_y)
             bg_z_list.append(bg_z)
 
             #Store covariance matrix from ErKF
-            P_list.append(P)
+            #P_list.append(P)
 
             #Store trace from covariance matrix
-            trace_list.append(trace)
+            #trace_list.append(trace)
 
             #Store inovation from ErKF
-            error_list.append(error_state)
+            #error_list.append(error_state)
 
             #Store IMU measurements
 
@@ -443,25 +441,25 @@ def controller_node():
 
 
             #Store position camera measurements
-            x_cam_list.append(x_cam)
-            y_cam_list.append(y_cam)
-            z_cam_list.append(z_cam)
+            #x_cam_list.append(x_cam)
+            #y_cam_list.append(y_cam)
+            #z_cam_list.append(z_cam)
 
-            x_cam2_list.append(x_cam2)
-            y_cam2_list.append(y_cam2)
-            z_cam2_list.append(z_cam2)
+            #x_cam2_list.append(x_cam2)
+            #y_cam2_list.append(y_cam2)
+            #z_cam2_list.append(z_cam2)
 
             #Store quaternion camera
 
-            q0_cam_list.append(q0_cam)
-            q1_cam_list.append(q1_cam)
-            q2_cam_list.append(q2_cam)
-            q3_cam_list.append(q3_cam)
+            #q0_cam_list.append(q0_cam)
+            #q1_cam_list.append(q1_cam)
+            #q2_cam_list.append(q2_cam)
+            #q3_cam_list.append(q3_cam)
 
-            q0_cam2_list.append(q0_cam2)
-            q1_cam2_list.append(q1_cam2)
-            q2_cam2_list.append(q2_cam2)
-            q3_cam2_list.append(q3_cam2)
+            #q0_cam2_list.append(q0_cam2)
+            #q1_cam2_list.append(q1_cam2)
+            #q2_cam2_list.append(q2_cam2)
+            #q3_cam2_list.append(q3_cam2)
 
         
         else:
@@ -476,20 +474,21 @@ def controller_node():
             #Create dictionary containing all positions and attitudes
             states_dict = {'real position': [x_real_list, y_real_list, z_real_list],
                            'desired position': [x_list, y_list, z_list], 
-                           'measured position camera 1': [x_cam_list, y_cam_list, z_cam_list],
-                           'measured position camera 2': [x_cam2_list, y_cam2_list, z_cam2_list],
-                           'estimated position': [x_est_list, y_est_list, z_est_list],
-                           'real attitude': [q0_list, q1_list, q2_list, q3_list],
-                           'measured attitude camera 1': [q0_cam_list, q1_cam_list, q2_cam_list, q3_cam_list],
-                           'measured attitude camera 2': [q0_cam2_list, q1_cam2_list, q2_cam2_list, q3_cam2_list],
-                           'desired attitude': [q0_des_list, q1_des_list, q2_des_list, q3_des_list],
-                           'estimated attitude': [q0_est_list, q1_est_list, q2_est_list, q3_est_list],
-                           'trace': trace_list, 
+                           #'measured position camera 1': [x_cam_list, y_cam_list, z_cam_list],
+                           #'measured position camera 2': [x_cam2_list, y_cam2_list, z_cam2_list],
+                           #'estimated position': [x_est_list, y_est_list, z_est_list],
+                           #'real attitude': [q0_list, q1_list, q2_list, q3_list],
+                           'real attitude euler': [roll_real_list, pitch_real_list, yaw_real_list],
+                           #'measured attitude camera 1': [q0_cam_list, q1_cam_list, q2_cam_list, q3_cam_list],
+                           #'measured attitude camera 2': [q0_cam2_list, q1_cam2_list, q2_cam2_list, q3_cam2_list],
+                           #'desired attitude': [q0_des_list, q1_des_list, q2_des_list, q3_des_list],
+                           #'estimated attitude': [q0_est_list, q1_est_list, q2_est_list, q3_est_list],
+                           #'trace': trace_list, 
                            'estimated gyro bias': [bg_x_list, bg_y_list, bg_z_list],
                            'accel meas': [ax_list, ay_list, az_list],
                            'gyro meas': [gx_list, gy_list, gz_list],
-                           'P': P_list,
-                           'error state': error_list,
+                           #'P': P_list,
+                           #'error state': error_list,
                            'vel': [vx_list, vy_list, vz_list],
                            'vel_real': [vx_real_list, vy_real_list, vz_real_list]}
             
