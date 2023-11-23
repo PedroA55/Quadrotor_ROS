@@ -95,10 +95,10 @@ class Controller:
         #              [-self.L*self.KT, 0, self.L*self.KT, 0],
         #              [0, -self.L*self.KT, 0, self.L*self.KT],
         #             [-self.KD, self.KD, -self.KD, self.KD]])
-        x = np.array([[self.KT, self.KT, self.KT, self.KT],
-                      [0, self.L*self.KT, 0, -self.L*self.KT],
-                      [-self.L*self.KT, 0, self.L*self.KT, 0],
-                      [-self.KD, self.KD, -self.KD, self.KD]])
+        #x = np.array([[self.KT, self.KT, self.KT, self.KT],
+        #              [0, self.L*self.KT, 0, -self.L*self.KT],
+        #              [-self.L*self.KT, 0, self.L*self.KT, 0],
+        #              [-self.KD, self.KD, -self.KD, self.KD]])
         x_t = np.array([[1/(4*self.KT), 0, -1/(2*self.KT*self.L), -1/(4*self.KD)],
                       [1/(4*self.KT), 1/(2*self.KT*self.L), 0, 1/(4*self.KD)],
                       [1/(4*self.KT), 0, 1/(2*self.KT*self.L), -1/(4*self.KD)],
@@ -124,7 +124,7 @@ class Controller:
         w = np.array([w_1,w_2,w_3,w_4]).reshape(4,1)
 
         FM_new = np.dot(x, u)
-        
+    
         F_new = FM_new[0]
         M_new = FM_new[1:4]
         
@@ -167,12 +167,12 @@ class Controller:
     def pos_control_PD2(self, pos_atual, pos_des, vel_atual, vel_des, accel_des, psi):
 
         #PD gains Real States
-        Kp = np.array([[10, 0 ,0],
-                       [0, 10, 0],
-                       [0, 0, 10]])*1
-        Kd = np.array([[-1, 0, 0],
-                       [0, -1, 0],
-                       [0, 0, -3]])*0
+        Kp = np.array([[-0.0168903, 0 ,0],
+                       [0, 0.0168903, 0],
+                       [0, 0, -0.170838]])
+        Kd = np.array([[-0.0428771, 0, 0],
+                       [0, -0.0428771, 0],
+                       [0, 0, -0.433684]])
 
         dpos_error = pos_des - pos_atual
 
@@ -212,12 +212,12 @@ class Controller:
         r = float(ang_vel_atual[2])
 
         #PID gains Real States
-        Kp = np.array([[30, 0 ,0],
-                       [0, 30, 0],
-                       [0, 0, 1.4]])*3.5
-        Kd = np.array([[8, 0, 0],
-                       [0, 8, 0],
-                       [0, 0, 1]])*0.8
+        Kp = np.array([[0.00279146, 0 ,0],
+                       [0, 0.00279146, 0],
+                       [0, 0, 0.00470054]])
+        Kd = np.array([[0.00708632, 0, 0],
+                       [0, 0.00708632, 0],
+                       [0, 0, 0.0119326]])
 
 
         
