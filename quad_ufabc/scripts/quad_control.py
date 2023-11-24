@@ -45,7 +45,7 @@ class Controller:
     H = np.zeros((6,6))
     # Matriz Q
     Q = np.zeros((6,6))
-    Q_elem = 0.5
+    Q_elem = 1
     Q[0, 0] = Q_elem
     Q[1, 1] = Q_elem
     Q[2, 2] = Q_elem
@@ -54,7 +54,7 @@ class Controller:
     Q[5, 5] = Q_elem
     # Matriz R
     R = np.zeros((3,3))
-    R_elem = 0.01
+    R_elem = 0.1
     R[0, 0] = R_elem
     R[1, 1] = R_elem
     R[2, 2] = R_elem
@@ -76,7 +76,7 @@ class Controller:
         self.ang_ant_des = np.zeros((3,1))
         self.theta_des_ant = np.zeros((3,1))
 
-        self.i_error = np.zeros((3,1))
+        self.integral_error = np.zeros((3,1))
 
 
     def f2w(self,f,m):
@@ -92,13 +92,13 @@ class Controller:
             M_new - clipped momentum (same as above)
         """""
         #x = np.array([[self.KT, self.KT, self.KT, self.KT],
-        #              [-self.L*self.KT, 0, self.L*self.KT, 0],
-        #              [0, -self.L*self.KT, 0, self.L*self.KT],
-        #             [-self.KD, self.KD, -self.KD, self.KD]])
-        #x = np.array([[self.KT, self.KT, self.KT, self.KT],
-        #              [0, self.L*self.KT, 0, -self.L*self.KT],
-        #              [-self.L*self.KT, 0, self.L*self.KT, 0],
-        #              [-self.KD, self.KD, -self.KD, self.KD]])
+        #            [-self.L*self.KT, 0, self.L*self.KT, 0],
+        #            [0, -self.L*self.KT, 0, self.L*self.KT],
+        #            [-self.KD, self.KD, -self.KD, self.KD]])
+        x = np.array([[self.KT, self.KT, self.KT, self.KT],
+                    [0, self.L*self.KT, 0, -self.L*self.KT],
+                    [-self.L*self.KT, 0, self.L*self.KT, 0],
+                    [-self.KD, self.KD, -self.KD, self.KD]])
         x_t = np.array([[1/(4*self.KT), 0, -1/(2*self.KT*self.L), -1/(4*self.KD)],
                       [1/(4*self.KT), 1/(2*self.KT*self.L), 0, 1/(4*self.KD)],
                       [1/(4*self.KT), 0, 1/(2*self.KT*self.L), -1/(4*self.KD)],
@@ -164,15 +164,18 @@ class Controller:
         return tau_x, tau_y, tau_z
     
     # Pedro: Meu controlador PID para a posição 
-    def pos_control_PD2(self, pos_atual, pos_des, vel_atual, vel_des, accel_des, psi):
+    def pos_control_PID(self, pos_atual, pos_des, vel_atual, vel_des, accel_des, psi):
 
-        #PD gains Real States
-        Kp = np.array([[-0.0168903, 0 ,0],
-                       [0, 0.0168903, 0],
-                       [0, 0, -0.170838]])
-        Kd = np.array([[-0.0428771, 0, 0],
-                       [0, -0.0428771, 0],
-                       [0, 0, -0.433684]])
+        #PID gains Real States
+        Kp = np.array([[0.14307581253186155, 0 ,0],
+                       [0,-0.14307581253186155, 0],
+                       [0, 0, 0.9527546134347671]])
+        Ki = np.array([[0.054379366076930426, 0, 0],
+                       [0, -0.054379366076930426, 0],
+                       [0, 0, 0.2750127680608602]])
+        Kd = np.array([[0.20366598778004072, 0, 0],
+                       [0,-0.20366598778004072, 0],
+                       [0, 0, 1.442]])
 
         dpos_error = pos_des - pos_atual
 
@@ -187,10 +190,12 @@ class Controller:
         else:
            pos_error = (dpos_error.T@n)@n + (dpos_error.T@b)@b
 
-
+        # Acumulando o termo integrador
+        self.integral_error += pos_error * 0.01 # Eu sei que a amostragem é constante pelo trajectory_generator.py
+        #mas precisa arrumar isso. Variável "dt = 0.01"
         
         # alo = 1
-        rddot_c = accel_des + Kd@vel_error + Kp@dpos_error 
+        rddot_c = accel_des + Kd@vel_error + Kp@dpos_error +Ki@self.integral_error
         
         print(rddot_c)
 
