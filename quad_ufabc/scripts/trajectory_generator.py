@@ -39,7 +39,7 @@ controller = Controller()
 #Trajectory 4 - Apenas subida pairado
 x_wp = np.array([[0, 0, 0, 0, 0]]).T
 y_wp = np.array([[0, 0, 0, 0, 0 ]]).T
-z_wp = np.array([[0, 0.2, 0.2, 0.5, 1]]).T
+z_wp = np.array([[0, 1, 4, 7, 10]]).T
 psi_wp = np.array([[0, 0, 0, 0, 0]]).T
 
 
