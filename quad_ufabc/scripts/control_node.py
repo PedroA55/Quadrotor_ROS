@@ -329,7 +329,7 @@ def controller_node():
             #Position Control based in quaternion parametrization
             #T, q_pdes = controller.pos_control_quat(pos_est, pos_ref, vel_real, vel_ref, accel_ref)#Pedro: tem trocar esse cara
             #T, phi_des, theta_des = controller.pos_control_PD(pos_real, pos_ref, vel_real, vel_ref, accel_ref, psi)
-            T, phi_des, theta_des = controller.pos_control_PD2(pos_real, pos_ref, vel_real, vel_ref, accel_ref, psi)
+            T, phi_des, theta_des = controller.pos_control_PID(pos_real, pos_ref, vel_real, vel_ref, accel_ref, psi)
             ang_ref = np.asarray([phi_des, theta_des, psi_des], dtype=object).reshape(3,1)
             rospy.loginfo('Alo')
 
@@ -366,7 +366,7 @@ def controller_node():
 
             
             #Send the command to quadrotor
-            quad_ufabc.step(w/10) #Original
+            quad_ufabc.step(w) #Original
             
             ##################   Append lists  ####################################################
 
@@ -467,7 +467,7 @@ def controller_node():
             #Indicates that the trajectory is finished
             flag_calib.data = True
             flag_calib_pub.publish(flag_calib)
-            
+            print('Acabou a trajetória')
             #Turn off quadrotor
             quad_ufabc.step([0, 0, 0, 0])
 
