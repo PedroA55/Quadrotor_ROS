@@ -19,7 +19,7 @@ mydir = os.path.abspath(sys.path[0])
 
 #Results directory
 results = 'data/states.p'
-case = 'Control_PD'
+case = 'traj_1'
 
 ########################## PLOTTING ANALYSIS #############################################
 
