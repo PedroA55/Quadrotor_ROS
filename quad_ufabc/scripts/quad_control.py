@@ -169,13 +169,13 @@ class Controller:
         #PID gains Real States
         Kp = np.array([[0.14307581253186155, 0 ,0],
                        [0,-0.14307581253186155, 0],
-                       [0, 0, 0.9527546134347671]])
+                       [0, 0, 2.2207216181580893]])
         Ki = np.array([[0.054379366076930426, 0, 0],
                        [0, -0.054379366076930426, 0],
-                       [0, 0, 0.2750127680608602]])
+                       [0, 0, 1.013582427237134]])
         Kd = np.array([[0.20366598778004072, 0, 0],
                        [0,-0.20366598778004072, 0],
-                       [0, 0, 1.442]])
+                       [0, 0, 2.575]])
 
         dpos_error = pos_des - pos_atual
 
@@ -195,7 +195,7 @@ class Controller:
         #mas precisa arrumar isso. Variável "dt = 0.01"
         
         # alo = 1
-        rddot_c = accel_des + Kd@vel_error + Kp@dpos_error +Ki@self.integral_error
+        rddot_c = accel_des + Kd@vel_error + Kp@dpos_error + Ki@self.integral_error
         
         print(rddot_c)
 
