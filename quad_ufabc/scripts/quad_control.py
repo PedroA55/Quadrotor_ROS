@@ -54,7 +54,7 @@ class Controller:
     Q[5, 5] = Q_elem
     # Matriz R
     R = np.zeros((3,3))
-    R_elem = 0.1
+    R_elem = 1
     R[0, 0] = R_elem
     R[1, 1] = R_elem
     R[2, 2] = R_elem
@@ -75,6 +75,7 @@ class Controller:
 
         self.ang_ant_des = np.zeros((3,1))
         self.theta_des_ant = np.zeros((3,1))
+        self.vel_ant_des = np.zeros((3,1))
 
         self.integral_error = np.zeros((3,1))
 
@@ -145,6 +146,7 @@ class Controller:
         ang_vel_error.reshape(3,1)
 
         Xe = np.concatenate((angle_error, ang_vel_error), axis=0) # vetor de estado
+        print(Xe)
         Xe.reshape(6,1)
 
         # Parâmetros:
@@ -161,21 +163,21 @@ class Controller:
         #solucao_S = lambda t_atual, g : solucao_s2(t_atual, g, P, A, E, Q, r)
 
 
-        return tau_x, tau_y, tau_z
+        return tau_x, tau_y, tau_z, Xe
     
     # Pedro: Meu controlador PID para a posição 
     def pos_control_PID(self, pos_atual, pos_des, vel_atual, vel_des, accel_des, psi):
 
         #PID gains Real States
         Kp = np.array([[0.14307581253186155, 0 ,0],
-                       [0,-0.14307581253186155, 0],
-                       [0, 0, 2.2207216181580893]])
+                       [0,0.14307581253186155, 0],
+                       [0, 0, 0.9527546134347671]])
         Ki = np.array([[0.054379366076930426, 0, 0],
-                       [0, -0.054379366076930426, 0],
-                       [0, 0, 1.013582427237134]])
+                       [0,0.054379366076930426, 0],
+                       [0, 0, 0.2750127680608602]])
         Kd = np.array([[0.20366598778004072, 0, 0],
-                       [0,-0.20366598778004072, 0],
-                       [0, 0, 2.575]])
+                       [0,0.20366598778004072, 0],
+                       [0, 0, 1.442]])
 
         dpos_error = pos_des - pos_atual
 
@@ -216,7 +218,7 @@ class Controller:
         q = float(ang_vel_atual[1])
         r = float(ang_vel_atual[2])
 
-        #PID gains Real States
+        #PD gains Real States
         Kp = np.array([[0.00279146, 0 ,0],
                        [0, 0.00279146, 0],
                        [0, 0, 0.00470054]])
@@ -231,6 +233,8 @@ class Controller:
         ang_vel_des = (ang_des - self.ang_ant_des)/0.01
 
         ang_vel_error = ang_vel_des - ang_vel_atual
+        
+        #ang_acc_des = (ang_vel_des - self.vel_ant_des)/0.01 # Tenho a aceleração desejada
 
 
         # print(angle_error.T)
@@ -242,8 +246,8 @@ class Controller:
         
         # print(Kp@angle_error)
         #u = np.linalg.inv(T)@(Kp@angle_error + Kd@ang_vel_error)
-        tau_x = self.Ixx*(-Kd[0,0]*p+Kp[0,0]*angle_error[0])
-        tau_y = self.Iyy*(-Kd[1,1]*q+Kp[1,1]*angle_error[1])
+        tau_x = self.Ixx*(Kd[0,0]*ang_vel_error[0]+Kp[0,0]*angle_error[0])
+        tau_y = self.Iyy*(Kd[1,1]*ang_vel_error[1]+Kp[1,1]*angle_error[1])
         tau_z = self.Izz*(Kd[2,2]*ang_vel_error[2]+Kp[2,2]*angle_error[2])
 
         #tau_x = float(u[0])
@@ -251,6 +255,7 @@ class Controller:
         #tau_z = float(u[2])
 
         self.ang_ant_des = ang_des
+        self.vel_ant_des = ang_vel_des
 
         return tau_x, tau_y, tau_z
         
